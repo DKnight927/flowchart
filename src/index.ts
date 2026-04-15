@@ -145,8 +145,22 @@ function createMcpServer() {
         }
 
         fs.writeFileSync(filePath, content, 'utf-8');
+
+        // Return the diagram content inline so the AI can display it to the user
+        // regardless of whether the user has access to the server's filesystem
         return {
-          content: [{ type: 'text', text: `Diagram generated\nFormat: ${format}\nTitle: ${title}\nFile: ${filePath}\nSize: ${content.length} bytes` }],
+          content: [
+            {
+              type: 'text',
+              text: [
+                `Diagram generated successfully.`,
+                `Format: ${format} | Type: ${diagram_spec.diagramType} | Title: ${title}`,
+                `---DIAGRAM_CONTENT_START---`,
+                content,
+                `---DIAGRAM_CONTENT_END---`,
+              ].join('\n'),
+            },
+          ],
         };
       }
 

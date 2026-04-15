@@ -84,15 +84,36 @@ function genSequence(spec: DiagramSpec): string {
     lines.push(`  ${keyword} ${n.id} as ${n.label}`);
   }
 
-  // render fragments (alt/loop/opt etc) and edges
-  const fragStarts = new Map<string, ContainerElement>();
-  const fragChildren = new Set<string>();
+  // Build a map: edgeId -> which container it belongs to
+  const edgeToContainer = new Map<string, ContainerElement>();
   for (const c of containers) {
-    fragStarts.set(c.id, c);
-    for (const ch of c.children ?? []) fragChildren.add(ch);
+    for (const ch of c.children ?? []) {
+      edgeToContainer.set(ch, c);
+    }
   }
 
+  // Track which containers we've opened/closed
+  const openedContainers = new Set<string>();
+  let currentContainer: ContainerElement | null = null;
+
   for (const e of edges) {
+    const container = edgeToContainer.get(e.id);
+
+    // Close previous container if we've moved to a different one (or none)
+    if (currentContainer && (!container || container.id !== currentContainer.id)) {
+      lines.push(`  end`);
+      currentContainer = null;
+    }
+
+    // Open new container if this edge belongs to one we haven't opened
+    if (container && !openedContainers.has(container.id)) {
+      const keyword = container.fragment ?? 'alt';
+      const label = container.fragmentLabel ?? container.name;
+      lines.push(`  ${keyword} ${label}`);
+      openedContainers.add(container.id);
+      currentContainer = container;
+    }
+
     const arrow = e.messageType === 'async'  ? '-->>'
                 : e.messageType === 'return' ? '-->'
                 : '->>';
@@ -102,9 +123,14 @@ function genSequence(spec: DiagramSpec): string {
     if (e.deactivate) lines.push(`  deactivate ${e.source}`);
   }
 
-  // fragments
+  // Close any remaining open container
+  if (currentContainer) {
+    lines.push(`  end`);
+  }
+
+  // Render containers that have no edge children (standalone notes/rects)
   for (const c of containers) {
-    if (c.fragment) {
+    if (!openedContainers.has(c.id) && c.fragment) {
       lines.push(`  ${c.fragment} ${c.fragmentLabel ?? c.name}`);
       lines.push(`  end`);
     }
