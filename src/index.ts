@@ -49,18 +49,20 @@ function createMcpServer() {
       },
       {
         name: 'liuchengtu',
-        description: 'Generate a diagram file from a structured JSON spec. Supports drawio, mermaid, and excalidraw formats.',
+        description: 'Generate a diagram file. Supports 7 diagram types (flowchart/sequence/class/er/mindmap/architecture/network) in 3 output formats (mermaid/drawio/excalidraw).',
         inputSchema: {
           type: 'object',
           required: ['diagram_spec'],
           properties: {
             diagram_spec: {
               type: 'object',
-              description: 'Diagram specification (see schema)',
-              required: ['format', 'elements'],
+              description: 'Diagram specification',
+              required: ['format', 'diagramType', 'elements'],
               properties: {
-                format: { type: 'string', enum: ['drawio', 'mermaid', 'excalidraw'] },
+                format: { type: 'string', enum: ['mermaid', 'drawio', 'excalidraw'] },
+                diagramType: { type: 'string', enum: ['flowchart', 'sequence', 'class', 'er', 'mindmap', 'architecture', 'network'] },
                 title: { type: 'string' },
+                direction: { type: 'string', enum: ['TD', 'LR', 'BT', 'RL'] },
                 elements: {
                   type: 'array',
                   items: {
@@ -77,6 +79,18 @@ function createMcpServer() {
                       children: { type: 'array', items: { type: 'string' } },
                       style:    { type: 'object' },
                       geometry: { type: 'object' },
+                      properties: { type: 'array', items: { type: 'string' } },
+                      methods:    { type: 'array', items: { type: 'string' } },
+                      attributes: { type: 'array', items: { type: 'object' } },
+                      parent:     { type: 'string' },
+                      participantType: { type: 'string', enum: ['participant', 'actor'] },
+                      stereotype: { type: 'string' },
+                      messageType: { type: 'string', enum: ['sync', 'async', 'return', 'note'] },
+                      relationType: { type: 'string' },
+                      activate:   { type: 'boolean' },
+                      deactivate: { type: 'boolean' },
+                      fragment:   { type: 'string' },
+                      fragmentLabel: { type: 'string' },
                     },
                   },
                 },
