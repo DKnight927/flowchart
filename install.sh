@@ -2,7 +2,7 @@
 set -e
 
 # ─── Config ───────────────────────────────────────────────────────────────────
-REPO_URL="https://github.com/YOUR_GITHUB_USERNAME/mcp-diagram-generator.git"
+REPO_URL="https://github.com/DKnight927/mcp-diagram-generator.git"
 INSTALL_DIR="$HOME/.mcp-diagram-generator"
 MCP_JSON="$HOME/.cursor/mcp.json"
 
