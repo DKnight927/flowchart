@@ -2,8 +2,8 @@
 set -e
 
 # ─── Config ───────────────────────────────────────────────────────────────────
-REPO_URL="https://github.com/DKnight927/mcp-diagram-generator.git"
-INSTALL_DIR="$HOME/.mcp-diagram-generator"
+REPO_URL="https://github.com/DKnight927/flowchart.git"
+INSTALL_DIR="$HOME/.flowchart"
 MCP_JSON="$HOME/.cursor/mcp.json"
 
 # ─── Colors ───────────────────────────────────────────────────────────────────
@@ -13,7 +13,7 @@ warning() { echo -e "${YELLOW}[!]${NC} $1"; }
 error()   { echo -e "${RED}[✗]${NC} $1"; exit 1; }
 
 echo ""
-echo "  mcp-diagram-generator installer"
+echo "  flowchart installer"
 echo "  ─────────────────────────────────"
 echo ""
 
@@ -26,7 +26,7 @@ info "环境检查通过（git / node / npm）"
 
 # ─── Clone or update ──────────────────────────────────────────────────────────
 if [ -d "$INSTALL_DIR/.git" ]; then
-  warning "已检测到旧版本，正在更新..."
+    warning "已检测到旧版本，正在更新..."
   git -C "$INSTALL_DIR" pull --quiet
   info "代码已更新"
 else
@@ -47,7 +47,7 @@ info "编译完成 → $INSTALL_DIR/dist/index.js"
 # ─── Auto-update mcp.json ─────────────────────────────────────────────────────
 ENTRY_POINT="$INSTALL_DIR/dist/index.js"
 MCP_BLOCK=$(cat <<EOF
-    "mcp-diagram-generator": {
+    "flowchart": {
       "transport": "stdio",
       "command": "node",
       "args": ["$ENTRY_POINT"]
@@ -57,8 +57,8 @@ EOF
 
 if [ -f "$MCP_JSON" ]; then
   # Check if already configured
-  if grep -q "mcp-diagram-generator" "$MCP_JSON"; then
-    warning "mcp.json 中已存在 mcp-diagram-generator 配置，跳过自动写入"
+  if grep -q "flowchart" "$MCP_JSON"; then
+    warning "mcp.json 中已存在 flowchart 配置，跳过自动写入"
   else
     # Use Python to safely insert into JSON (macOS has python3 built-in)
     python3 - "$MCP_JSON" "$ENTRY_POINT" <<'PYEOF'
@@ -73,7 +73,7 @@ with open(mcp_json_path, 'r') as f:
 if 'mcpServers' not in config:
     config['mcpServers'] = {}
 
-config['mcpServers']['mcp-diagram-generator'] = {
+config['mcpServers']['flowchart'] = {
     'transport': 'stdio',
     'command': 'node',
     'args': [entry_point]
@@ -98,7 +98,7 @@ echo "  安装完成！"
 echo ""
 echo "  请将以下配置加入你的 .cursor/mcp.json："
 echo ""
-echo '  "mcp-diagram-generator": {'
+echo '  "flowchart": {'
 echo '    "transport": "stdio",'
 echo '    "command": "node",'
 echo "    \"args\": [\"$ENTRY_POINT\"]"

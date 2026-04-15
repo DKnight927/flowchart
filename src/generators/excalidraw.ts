@@ -191,7 +191,7 @@ export function generateExcalidraw(spec: DiagramSpec): string {
   const doc = {
     type: 'excalidraw',
     version: 2,
-    source: 'mcp-diagram-generator',
+    source: 'flowchart',
     elements,
     appState: {
       gridSize: null,

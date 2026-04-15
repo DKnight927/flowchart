@@ -1,10 +1,10 @@
 {
-  "name": "mcp-diagram-generator",
+  "name": "flowchart",
   "version": "1.0.0",
-  "description": "MCP server for generating diagrams in drawio / mermaid / excalidraw formats",
+  "description": "MCP server for generating diagrams (drawio/mermaid/excalidraw) with liuchengtu tool",
   "main": "dist/index.js",
   "bin": {
-    "mcp-diagram-generator": "dist/index.js"
+    "flowchart": "dist/index.js"
   },
   "scripts": {
     "build": "tsc",

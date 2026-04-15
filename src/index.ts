@@ -15,7 +15,7 @@ import { DiagramSpec, DiagramFormat } from './types';
 // ─── Server setup ────────────────────────────────────────────────────────────
 
 const server = new Server(
-  { name: 'mcp-diagram-generator', version: '1.0.0' },
+  { name: 'flowchart', version: '1.0.0' },
   { capabilities: { tools: {} } },
 );
 
@@ -200,7 +200,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 async function main() {
   const transport = new StdioServerTransport();
   await server.connect(transport);
-  process.stderr.write('mcp-diagram-generator running on stdio\n');
+  process.stderr.write('flowchart running on stdio\n');
 }
 
 main().catch((err) => {
