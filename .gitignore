@@ -1,0 +1,6 @@
+node_modules/
+dist/
+.diagram-config.json
+diagrams/
+*.log
+.DS_Store
