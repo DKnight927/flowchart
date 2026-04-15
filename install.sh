@@ -5,6 +5,7 @@ set -e
 REPO_URL="https://github.com/DKnight927/flowchart.git"
 INSTALL_DIR="$HOME/.flowchart"
 MCP_JSON="$HOME/.cursor/mcp.json"
+PORT="${FLOWCHART_PORT:-3000}"
 
 # ─── Colors ───────────────────────────────────────────────────────────────────
 GREEN='\033[0;32m'; YELLOW='\033[1;33m'; RED='\033[0;31m'; NC='\033[0m'
@@ -13,7 +14,7 @@ warning() { echo -e "${YELLOW}[!]${NC} $1"; }
 error()   { echo -e "${RED}[✗]${NC} $1"; exit 1; }
 
 echo ""
-echo "  flowchart installer"
+echo "  flowchart MCP server installer"
 echo "  ─────────────────────────────────"
 echo ""
 
@@ -26,7 +27,7 @@ info "环境检查通过（git / node / npm）"
 
 # ─── Clone or update ──────────────────────────────────────────────────────────
 if [ -d "$INSTALL_DIR/.git" ]; then
-    warning "已检测到旧版本，正在更新..."
+  warning "已检测到旧版本，正在更新..."
   git -C "$INSTALL_DIR" pull --quiet
   info "代码已更新"
 else
@@ -45,65 +46,47 @@ npm --prefix "$INSTALL_DIR" run build --quiet
 info "编译完成 → $INSTALL_DIR/dist/index.js"
 
 # ─── Auto-update mcp.json ─────────────────────────────────────────────────────
-ENTRY_POINT="$INSTALL_DIR/dist/index.js"
-MCP_BLOCK=$(cat <<EOF
-    "flowchart": {
-      "transport": "stdio",
-      "command": "node",
-      "args": ["$ENTRY_POINT"]
-    }
-EOF
-)
-
 if [ -f "$MCP_JSON" ]; then
-  # Check if already configured
-  if grep -q "flowchart" "$MCP_JSON"; then
+  if grep -q '"flowchart"' "$MCP_JSON"; then
     warning "mcp.json 中已存在 flowchart 配置，跳过自动写入"
   else
-    # Use Python to safely insert into JSON (macOS has python3 built-in)
-    python3 - "$MCP_JSON" "$ENTRY_POINT" <<'PYEOF'
+    python3 - "$MCP_JSON" "$PORT" <<'PYEOF'
 import json, sys
-
-mcp_json_path = sys.argv[1]
-entry_point   = sys.argv[2]
-
-with open(mcp_json_path, 'r') as f:
-    config = json.load(f)
-
-if 'mcpServers' not in config:
-    config['mcpServers'] = {}
-
+path, port = sys.argv[1], sys.argv[2]
+with open(path) as f: config = json.load(f)
+if 'mcpServers' not in config: config['mcpServers'] = {}
 config['mcpServers']['flowchart'] = {
-    'transport': 'stdio',
-    'command': 'node',
-    'args': [entry_point]
+    'transport': 'http',
+    'url': f'http://localhost:{port}/mcp'
 }
-
-with open(mcp_json_path, 'w') as f:
+with open(path, 'w') as f:
     json.dump(config, f, indent=2, ensure_ascii=False)
     f.write('\n')
-
 print("mcp.json 已自动更新")
 PYEOF
     info "已自动写入 $MCP_JSON"
   fi
 else
-  warning "未找到 $MCP_JSON，请手动添加以下配置："
+  warning "未找到 $MCP_JSON，请手动添加以下配置"
 fi
 
 # ─── Done ─────────────────────────────────────────────────────────────────────
 echo ""
-echo "  ────────────────────────────────────────────────"
+echo "  ────────────────────────────────────────────────────"
 echo "  安装完成！"
 echo ""
-echo "  请将以下配置加入你的 .cursor/mcp.json："
+echo "  启动服务器（每次开机后运行一次）："
+echo "    node $INSTALL_DIR/dist/index.js"
 echo ""
-echo '  "flowchart": {'
-echo '    "transport": "stdio",'
-echo '    "command": "node",'
-echo "    \"args\": [\"$ENTRY_POINT\"]"
-echo '  }'
+echo "  或者设置端口："
+echo "    PORT=3001 node $INSTALL_DIR/dist/index.js"
 echo ""
-echo "  然后重启 Cursor 即可使用 liuchengtu 工具。"
-echo "  ────────────────────────────────────────────────"
+echo "  mcp.json 配置："
+echo "    \"flowchart\": {"
+echo "      \"transport\": \"http\","
+echo "      \"url\": \"http://localhost:${PORT}/mcp\""
+echo "    }"
+echo ""
+echo "  启动后重启 Cursor 即可使用 liuchengtu 工具。"
+echo "  ────────────────────────────────────────────────────"
 echo ""
