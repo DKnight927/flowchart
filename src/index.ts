@@ -8,6 +8,7 @@ import {
 import express, { Request, Response } from 'express';
 import { randomUUID } from 'crypto';
 import * as fs from 'fs';
+import * as path from 'path';
 import { loadConfig, initConfig, getOutputPath } from './config';
 import { generateMermaid } from './generators/mermaid';
 import { generateDrawio } from './generators/drawio';
@@ -137,7 +138,7 @@ function createMcpServer() {
         let filePath: string;
         if (output_path) {
           filePath = output_path;
-          fs.mkdirSync(require('path').dirname(filePath), { recursive: true });
+          fs.mkdirSync(path.dirname(filePath), { recursive: true });
         } else {
           const config = loadConfig();
           if (!config.initialized) initConfig();
