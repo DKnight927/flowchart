@@ -49,7 +49,59 @@ else
   error "远程服务器不可用（$HEALTH_URL），请联系管理员确认服务是否开启"
 fi
 
-# ─── 3. 配置 mcp.json ────────────────────────────────────────────────────
+# ─── 3. 配置 Comate config.yaml ──────────────────────────────────────────
+COMATE_YAML=""
+for candidate in "$HOME/.comate/config.yaml" "$HOME/.config/comate/config.yaml"; do
+  if [ -f "$candidate" ]; then
+    COMATE_YAML="$candidate"
+    break
+  fi
+done
+
+if [ -n "$COMATE_YAML" ]; then
+  if grep -q 'flowchart' "$COMATE_YAML" 2>/dev/null; then
+    warn "config.yaml 已有 flowchart 配置，正在更新..."
+    # 删除旧的 flowchart 块（可能是错误的 stdio 格式）
+    python3 - "$COMATE_YAML" "$SERVER_URL" <<'PYEOF'
+import sys, re
+path, url = sys.argv[1], sys.argv[2]
+with open(path) as f: content = f.read()
+# 移除旧的 flowchart 配置块
+content = re.sub(r'\s+flowchart:\s*\n(?:[ \t]+[^\n]*\n)*', '\n', content)
+with open(path, 'w') as f: f.write(content)
+PYEOF
+  fi
+
+  python3 - "$COMATE_YAML" "$SERVER_URL" <<'PYEOF'
+import sys, re
+path, url = sys.argv[1], sys.argv[2]
+with open(path) as f: content = f.read()
+
+new_block = f"""  flowchart:
+    transport: http
+    url: {url}
+"""
+
+if 'mcpServers:' in content:
+    content = re.sub(r'(mcpServers:\s*\n)', r'\1' + new_block, content, count=1)
+else:
+    content = content.rstrip() + '\nmcpServers:\n' + new_block
+
+with open(path, 'w') as f: f.write(content)
+PYEOF
+  info "已写入 $COMATE_YAML（HTTP 格式）"
+else
+  warn "未找到 Comate config.yaml，跳过（Comate 用户请手动添加以下配置）："
+  echo ""
+  echo "    # ~/.comate/config.yaml"
+  echo "    mcpServers:"
+  echo "      flowchart:"
+  echo "        transport: http"
+  echo "        url: $SERVER_URL"
+  echo ""
+fi
+
+# ─── 4. 配置 Cursor mcp.json（可选）────────────────────────────────────────
 MCP_JSON=""
 for candidate in "$PWD/.cursor/mcp.json" "$HOME/.cursor/mcp.json"; do
   if [ -f "$candidate" ]; then
@@ -58,18 +110,11 @@ for candidate in "$PWD/.cursor/mcp.json" "$HOME/.cursor/mcp.json"; do
   fi
 done
 
-if [ -z "$MCP_JSON" ]; then
-  MCP_JSON="$HOME/.cursor/mcp.json"
-  mkdir -p "$(dirname "$MCP_JSON")"
-  echo '{"mcpServers":{}}' > "$MCP_JSON"
-  info "创建 $MCP_JSON"
-fi
-
-if grep -q '"flowchart"' "$MCP_JSON" 2>/dev/null; then
-  warn "mcp.json 已有 flowchart 配置，正在更新..."
-fi
-
-python3 - "$MCP_JSON" "$SERVER_URL" <<'PYEOF'
+if [ -n "$MCP_JSON" ]; then
+  if grep -q '"flowchart"' "$MCP_JSON" 2>/dev/null; then
+    warn "mcp.json 已有 flowchart 配置，正在更新..."
+  fi
+  python3 - "$MCP_JSON" "$SERVER_URL" <<'PYEOF'
 import json, sys
 path, url = sys.argv[1], sys.argv[2]
 with open(path) as f: config = json.load(f)
@@ -79,8 +124,8 @@ with open(path, 'w') as f:
     json.dump(config, f, indent=2, ensure_ascii=False)
     f.write('\n')
 PYEOF
-
-info "已写入 $MCP_JSON"
+  info "已写入 $MCP_JSON"
+fi
 
 # ─── Done ─────────────────────────────────────────────────────────────────
 echo ""

@@ -21,10 +21,29 @@ Violations of this rule produce incorrect, unusable output.
 
 ## Prerequisites — MCP Tool Setup
 
-This skill relies on the `liuchengtu` MCP tool. The skill itself runs in Comate/OpenClaw; the MCP tool runs as a remote HTTP server and is registered in the IDE's MCP config (`.cursor/mcp.json` for Cursor users).
+This skill relies on the `liuchengtu` MCP tool. The tool runs as a remote HTTP server. Register it with:
 
-If `liuchengtu` tool is not available, run the one-line installer — it will download the skill files and register the MCP tool:
+**Comate / OpenClaw** — add to `~/.comate/config.yaml`:
+```yaml
+mcpServers:
+  flowchart:
+    transport: http
+    url: https://<ngrok-url>/mcp
+```
 
+**Cursor** — add to `.cursor/mcp.json`:
+```json
+{
+  "mcpServers": {
+    "flowchart": {
+      "transport": "http",
+      "url": "https://<ngrok-url>/mcp"
+    }
+  }
+}
+```
+
+Or run the one-line installer (auto-detects both config files):
 ```bash
 curl -fsSL https://raw.githubusercontent.com/DKnight927/flowchart/main/skill/scripts/setup_mcp.sh | bash
 ```
