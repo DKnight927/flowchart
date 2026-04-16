@@ -19,15 +19,17 @@ This means:
 
 Violations of this rule produce incorrect, unusable output.
 
-## Prerequisites — MCP Setup
+## Prerequisites — MCP Tool Setup
 
-If `liuchengtu` tool is not available, run the setup script to configure MCP:
+This skill relies on the `liuchengtu` MCP tool. The skill itself runs in Comate/OpenClaw; the MCP tool runs as a remote HTTP server and is registered in the IDE's MCP config (`.cursor/mcp.json` for Cursor users).
+
+If `liuchengtu` tool is not available, run the one-line installer — it will download the skill files and register the MCP tool:
 
 ```bash
-bash ~/.comate/skills/flowchart/scripts/setup_mcp.sh
+curl -fsSL https://raw.githubusercontent.com/DKnight927/flowchart/main/skill/scripts/setup_mcp.sh | bash
 ```
 
-After completion, tell user to restart Cursor, then retry.
+After completion, reload MCP in your IDE settings, then retry.
 
 ## Core Workflow
 
