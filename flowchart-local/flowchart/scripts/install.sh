@@ -32,15 +32,15 @@ mkdir -p "$(dirname "$SKILL_DIR")"
 
 git clone --quiet --no-checkout --depth=1 "$REPO" /tmp/flowchart_tmp 2>/dev/null
 cd /tmp/flowchart_tmp
-git sparse-checkout set flowchart-local/skill 2>/dev/null || true
+git sparse-checkout set flowchart-local/flowchart 2>/dev/null || true
 git checkout --quiet
 cd -
 
-if [ -d "/tmp/flowchart_tmp/flowchart-local/skill" ]; then
-  cp -R /tmp/flowchart_tmp/flowchart-local/skill "$SKILL_DIR"
+if [ -d "/tmp/flowchart_tmp/flowchart-local/flowchart" ]; then
+  cp -R /tmp/flowchart_tmp/flowchart-local/flowchart "$SKILL_DIR"
   info "skill 已安装 → $SKILL_DIR"
 else
-  error "下载失败：找不到 flowchart-local/skill 目录"
+  error "下载失败：找不到 flowchart-local/flowchart 目录"
 fi
 
 rm -rf /tmp/flowchart_tmp
